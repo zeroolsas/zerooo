@@ -1,179 +1,160 @@
 (() => {
   "use strict";
 
-  // Настройки проекта Supabase
+  // Настройки твоего проекта Supabase
   const SUPABASE_URL =
     "https://igixtidnujhdyogkikzz.supabase.co";
 
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_TzwrhJ6MAKc8DOtTO5PAlw_5GMmD58Z";
 
-  // Защита от повторного запуска этого скрипта
-  if (window.__supabaseExplorerInitialized) {
-    console.warn("Supabase Explorer уже запущен.");
-    return;
-  }
-  window.__supabaseExplorerInitialized = true;
-
   const statusEl = document.getElementById("status");
-  const messageEl = document.getElementById("message");
-  const tablesEl = document.getElementById("tables");
-  const tableCountEl = document.getElementById("tableCount");
-  const columnCountEl = document.getElementById("columnCount");
-  const refreshBtn = document.getElementById("refreshBtn");
+  const productsCountEl = document.getElementById("productsCount");
+  const totalValueEl = document.getElementById("totalValue");
+  const productsMessageEl = document.getElementById("productsMessage");
+  const productsTableEl = document.getElementById("productsTable");
+  const productsBodyEl = document.getElementById("productsBody");
+  const structureMessageEl = document.getElementById("structureMessage");
+  const structureTablesEl = document.getElementById("structureTables");
+  const refreshAllBtn = document.getElementById("refreshAllBtn");
+  const refreshProductsBtn = document.getElementById("refreshProductsBtn");
 
   let dbClient = null;
+  let loading = false;
 
   function setStatus(text, type = "") {
-    if (!statusEl) return;
-
     statusEl.textContent = text;
     statusEl.className = "status";
 
-    if (type) {
-      statusEl.classList.add(type);
-    }
+    if (type) statusEl.classList.add(type);
   }
 
-  function showMessage(text, isError = false) {
-    if (!messageEl) return;
+  function showMessage(element, text, type = "") {
+    element.hidden = false;
+    element.className = "message";
 
-    messageEl.hidden = false;
-    messageEl.className = isError
-      ? "message error"
-      : "message";
+    if (type) element.classList.add(type);
 
-    messageEl.textContent = text;
+    element.textContent = text;
   }
 
   function addCell(row, value, className = "") {
     const cell = document.createElement("td");
-    cell.textContent = String(value ?? "—");
+    cell.textContent = value == null ? "—" : String(value);
 
-    if (className) {
-      cell.className = className;
-    }
+    if (className) cell.className = className;
 
     row.appendChild(cell);
+    return cell;
   }
 
-  function renderTable(tableName, columns) {
-    const card = document.createElement("article");
-    card.className = "table-card";
+  function formatNumber(value) {
+    if (value == null || value === "") return "—";
 
-    const heading = document.createElement("div");
-    heading.className = "table-title";
+    const number = Number(value);
 
-    const icon = document.createElement("span");
-    icon.className = "table-icon";
-    icon.textContent = "▦";
+    if (!Number.isFinite(number)) return String(value);
 
-    const title = document.createElement("strong");
-    title.textContent = tableName;
+    return new Intl.NumberFormat("ru-RU", {
+      maximumFractionDigits: 2
+    }).format(number);
+  }
 
-    const count = document.createElement("span");
-    count.textContent = `${columns.length} столб.`;
+  function renderProduct(product) {
+    const row = document.createElement("tr");
 
-    heading.append(icon, title, count);
-    card.appendChild(heading);
+    addCell(row, product.id);
+    addCell(row, product.name);
+    addCell(row, formatNumber(product.price));
+    addCell(row, formatNumber(product.quantity));
+    addCell(row, formatNumber(product.total));
 
-    const scroll = document.createElement("div");
-    scroll.className = "table-scroll";
+    return row;
+  }
 
-    const table = document.createElement("table");
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
+  async function loadProducts() {
+    productsBodyEl.replaceChildren();
+    productsTableEl.hidden = true;
 
-    ["Столбец", "Тип данных", "NULL", "Позиция"]
-      .forEach((label) => {
-        const th = document.createElement("th");
-        th.textContent = label;
-        headerRow.appendChild(th);
+    productsCountEl.textContent = "—";
+    totalValueEl.textContent = "—";
+
+    showMessage(productsMessageEl, "Загружаем товары...");
+
+    try {
+      // Читаем реальные записи таблицы products
+      const { data, error } = await dbClient
+        .from("products")
+        .select("id, name, price, quantity, total")
+        .order("id", { ascending: true });
+
+      if (error) throw error;
+
+      const products = data || [];
+      const fragment = document.createDocumentFragment();
+
+      products.forEach((product) => {
+        fragment.appendChild(renderProduct(product));
       });
 
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+      productsBodyEl.appendChild(fragment);
+      productsCountEl.textContent = String(products.length);
 
-    const tbody = document.createElement("tbody");
+      const total = products.reduce((sum, product) => {
+        const value = Number(product.total);
 
-    columns.forEach((column) => {
-      const row = document.createElement("tr");
+        return sum + (Number.isFinite(value) ? value : 0);
+      }, 0);
 
-      addCell(row, column.column_name);
+      totalValueEl.textContent = formatNumber(total);
 
-      const typeCell = document.createElement("td");
-      const code = document.createElement("code");
-      code.textContent = column.data_type;
-      typeCell.appendChild(code);
-      row.appendChild(typeCell);
+      if (products.length === 0) {
+        showMessage(
+          productsMessageEl,
+          "Таблица доступна, но записей пока нет."
+        );
+      } else {
+        productsMessageEl.hidden = true;
+        productsTableEl.hidden = false;
+      }
 
-      const nullable = column.is_nullable === "YES";
+      return true;
+    } catch (error) {
+      console.error("Ошибка загрузки продуктов:", error);
 
-      addCell(
-        row,
-        nullable ? "Да" : "Нет",
-        nullable ? "null-yes" : "null-no"
+      showMessage(
+        productsMessageEl,
+        "Не удалось получить товары. " +
+        (error.message || String(error)) +
+        " Проверь разрешение SELECT и политики RLS для products.",
+        "error"
       );
 
-      addCell(row, column.ordinal_position);
-
-      tbody.appendChild(row);
-    });
-
-    table.appendChild(tbody);
-    scroll.appendChild(table);
-    card.appendChild(scroll);
-
-    return card;
+      return false;
+    }
   }
 
   async function loadStructure() {
-    if (!dbClient) {
-      showMessage(
-        "Клиент Supabase не инициализирован. " +
-        "Проверь загрузку библиотеки Supabase JS.",
-        true
-      );
-      setStatus("Ошибка", "error");
-      return;
-    }
+    structureTablesEl.replaceChildren();
 
-    if (refreshBtn) refreshBtn.disabled = true;
-
-    tablesEl?.replaceChildren();
-
-    if (tableCountEl) tableCountEl.textContent = "—";
-    if (columnCountEl) columnCountEl.textContent = "—";
-
-    showMessage("Загружаем структуру базы данных...");
-    setStatus("Загрузка...");
+    showMessage(
+      structureMessageEl,
+      "Загружаем структуру таблицы..."
+    );
 
     try {
-      const { data, error } = await dbClient.rpc(
-        "get_database_structure"
-      );
+      const { data, error } = await dbClient
+        .rpc("get_database_structure");
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (!Array.isArray(data)) {
-        throw new Error(
-          "Неожиданный ответ сервера. Ожидался список столбцов."
-        );
+        throw new Error("API вернул неожиданный формат структуры.");
       }
 
       const grouped = new Map();
 
       data.forEach((column) => {
-        if (
-          !column.table_name ||
-          !column.column_name ||
-          !column.data_type
-        ) {
-          return;
-        }
-
         if (!grouped.has(column.table_name)) {
           grouped.set(column.table_name, []);
         }
@@ -181,59 +162,143 @@
         grouped.get(column.table_name).push(column);
       });
 
-      const entries = [...grouped.entries()];
+      if (grouped.size === 0) {
+        showMessage(
+          structureMessageEl,
+          "В схеме public не найдено доступных столбцов."
+        );
+        return true;
+      }
 
-      entries.forEach(([tableName, columns]) => {
+      grouped.forEach((columns, tableName) => {
         columns.sort(
           (a, b) => a.ordinal_position - b.ordinal_position
         );
 
-        tablesEl.appendChild(
-          renderTable(tableName, columns)
-        );
+        const card = document.createElement("article");
+        card.className = "table-card";
+
+        const heading = document.createElement("div");
+        heading.className = "table-title";
+
+        const icon = document.createElement("span");
+        icon.className = "table-icon";
+        icon.textContent = "▦";
+
+        const title = document.createElement("strong");
+        title.textContent = tableName;
+
+        const count = document.createElement("span");
+        count.className = "column-count";
+        count.textContent = `${columns.length} столб.`;
+
+        heading.append(icon, title, count);
+        card.appendChild(heading);
+
+        const scroll = document.createElement("div");
+        scroll.className = "table-scroll";
+
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const header = document.createElement("tr");
+
+        ["Столбец", "Тип данных", "NULL", "Позиция"]
+          .forEach((label) => {
+            const th = document.createElement("th");
+            th.textContent = label;
+            header.appendChild(th);
+          });
+
+        thead.appendChild(header);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+
+        columns.forEach((column) => {
+          const row = document.createElement("tr");
+
+          addCell(row, column.column_name);
+
+          const typeCell = addCell(row, column.data_type);
+          const code = document.createElement("code");
+          code.textContent = column.data_type;
+          typeCell.replaceChildren(code);
+
+          const nullable = column.is_nullable === "YES";
+
+          addCell(
+            row,
+            nullable ? "Да" : "Нет",
+            nullable ? "null-yes" : "null-no"
+          );
+
+          addCell(row, column.ordinal_position);
+
+          tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        scroll.appendChild(table);
+        card.appendChild(scroll);
+        structureTablesEl.appendChild(card);
       });
 
-      if (tableCountEl) {
-        tableCountEl.textContent = String(entries.length);
-      }
-
-      if (columnCountEl) {
-        const totalColumns = entries.reduce(
-          (total, [, columns]) => total + columns.length,
-          0
-        );
-
-        columnCountEl.textContent = String(totalColumns);
-      }
-
-      if (entries.length === 0) {
-        showMessage(
-          "Таблицы не найдены в схеме public. " +
-          "Проверь, есть ли таблицы и настроена ли SQL-функция."
-        );
-      } else {
-        messageEl.hidden = true;
-      }
-
-      setStatus("Подключено", "ok");
+      structureMessageEl.hidden = true;
+      return true;
     } catch (error) {
-      console.error(
-        "Ошибка загрузки структуры Supabase:",
-        error
-      );
-
-      const details = error?.message || String(error);
+      console.error("Ошибка загрузки структуры:", error);
 
       showMessage(
-        "Не удалось загрузить структуру базы данных. " +
-        "Проверь SQL-функцию get_database_structure, " +
-        "права доступа и настройки API. Ошибка: " + details,
-        true
+        structureMessageEl,
+        "Не удалось загрузить структуру: " +
+        (error.message || String(error)) +
+        " Проверь SQL-функцию get_database_structure.",
+        "error"
       );
 
-      setStatus("Ошибка", "error");
+      return false;
+    }
+  }
+
+  async function refreshAll() {
+    if (loading) return;
+
+    loading = true;
+    refreshAllBtn.disabled = true;
+    refreshProductsBtn.disabled = true;
+
+    setStatus("Загрузка...");
+
+    try {
+      const results = await Promise.all([
+        loadProducts(),
+        loadStructure()
+      ]);
+
+      if (results.every(Boolean)) {
+        setStatus("Подключено", "ok");
+      } else {
+        setStatus("Есть ошибка", "error");
+      }
     } finally {
-      if (refreshBtn) refreshBtn.disabled = false;
+      loading = false;
+      refreshAllBtn.disabled = false;
+      refreshProductsBtn.disabled = false;
+    }
+  }
+
+  async function refreshProductsOnly() {
+    if (loading) return;
+
+    loading = true;
+    refreshProductsBtn.disabled = true;
+
+    try {
+      const ok = await loadProducts();
+      setStatus(ok ? "Подключено" : "Ошибка", ok ? "ok" : "error");
+    } finally {
+      loading = false;
+      refreshProductsBtn.disabled = false;
     }
   }
 
@@ -243,18 +308,19 @@
       typeof window.supabase.createClient !== "function"
     ) {
       showMessage(
+        productsMessageEl,
         "Не загрузилась библиотека Supabase JS. " +
-        "Проверь подключение к CDN в index.html.",
-        true
+        "Проверь подключение к CDN.",
+        "error"
       );
-      setStatus("Ошибка", "error");
-      return;
-    }
 
-    if (!tablesEl || !messageEl || !statusEl) {
-      console.error(
-        "Не найдены элементы интерфейса. Проверь index.html."
+      showMessage(
+        structureMessageEl,
+        "Библиотека Supabase недоступна.",
+        "error"
       );
+
+      setStatus("Ошибка", "error");
       return;
     }
 
@@ -265,17 +331,22 @@
       );
     } catch (error) {
       console.error("Ошибка инициализации Supabase:", error);
-      showMessage(
-        "Не удалось инициализировать клиент Supabase: " +
-        (error.message || String(error)),
-        true
-      );
+
       setStatus("Ошибка", "error");
+
+      showMessage(
+        productsMessageEl,
+        "Не удалось создать клиент: " + error.message,
+        "error"
+      );
+
       return;
     }
 
-    refreshBtn?.addEventListener("click", loadStructure);
-    loadStructure();
+    refreshAllBtn.addEventListener("click", refreshAll);
+    refreshProductsBtn.addEventListener("click", refreshProductsOnly);
+
+    refreshAll();
   }
 
   initialize();
