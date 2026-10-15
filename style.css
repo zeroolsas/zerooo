@@ -1,0 +1,305 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1120;
+  --panel: #111a2b;
+  --panel2: #172238;
+  --border: #29374e;
+  --text: #e8eef8;
+  --muted: #91a0b8;
+  --green: #3ecf8e;
+  --blue: #80aaff;
+  --red: #ff8585;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, Arial, sans-serif;
+  font-size: 14px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 5%;
+  border-bottom: 1px solid var(--border);
+  background: #0e1728;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--green);
+  color: #062719;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+h1, h2, h3, p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 4px;
+  font-size: 19px;
+}
+
+.topbar p, .muted {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.status {
+  margin-left: auto;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status.ok {
+  color: var(--green);
+  border-color: #245b49;
+}
+
+.status.error {
+  color: var(--red);
+  border-color: #673737;
+}
+
+.container {
+  width: min(1100px, 92%);
+  margin: 35px auto;
+}
+
+.intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.eyebrow {
+  margin-bottom: 10px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+h2 {
+  margin-bottom: 8px;
+  font-size: clamp(23px, 4vw, 32px);
+}
+
+button {
+  padding: 11px 16px;
+  border: 1px solid #2b805e;
+  border-radius: 9px;
+  background: #173e31;
+  color: #b8ffdc;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #20563f;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.stat-card, .panel, .table-card {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--panel);
+}
+
+.stat-card {
+  padding: 20px;
+}
+
+.stat-card span {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--muted);
+}
+
+.stat-card strong {
+  font-size: 30px;
+}
+
+.panel {
+  overflow: hidden;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-heading h3 {
+  margin: 0;
+}
+
+.panel-heading span {
+  color: var(--green);
+  font-family: monospace;
+}
+
+.message {
+  padding: 20px;
+  color: var(--muted);
+}
+
+.message.error {
+  color: var(--red);
+}
+
+.tables {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.table-card {
+  overflow: hidden;
+  background: #0d1626;
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-icon {
+  color: var(--green);
+  font-size: 18px;
+}
+
+.table-title strong {
+  overflow-wrap: anywhere;
+}
+
+.table-title span:last-child {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th, td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #202d40;
+  white-space: nowrap;
+}
+
+th {
+  color: var(--muted);
+  background: #101b2d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+td code {
+  color: var(--blue);
+  font-size: 12px;
+}
+
+td:first-child {
+  font-weight: 600;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.null-yes {
+  color: var(--green);
+}
+
+.null-no {
+  color: #f5bd6d;
+}
+
+.empty {
+  padding: 30px;
+  color: var(--muted);
+  text-align: center;
+}
+
+footer {
+  padding: 25px 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 16px 4%;
+  }
+
+  .container {
+    margin-top: 25px;
+  }
+
+  .intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+
+  .stat-card strong {
+    font-size: 25px;
+  }
+
+  .tables {
+    padding: 9px;
+  }
+}
