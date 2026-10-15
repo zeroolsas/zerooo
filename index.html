@@ -5,93 +5,79 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b1120">
-  <title>Supabase Products Explorer</title>
+  <title>Supabase Explorer — Мои товары</title>
+
   <link rel="stylesheet" href="style.css">
+
+  <!-- Библиотека Supabase: подключаем только один раз -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Скрипт загрузки товаров -->
+  <script src="script.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="logo">S</div>
     <div class="brand">
-      <h1>Supabase Explorer</h1>
-      <p>Управление продуктами</p>
+      <div class="brand-icon">S</div>
+      <div>
+        <h2>Supabase Explorer</h2>
+        <p>Управление каталогом товаров</p>
+      </div>
     </div>
-    <span id="status" class="status">Подключение...</span>
+
+    <div id="connection-status" class="connection-status">
+      Проверка подключения...
+    </div>
   </header>
 
   <main class="container">
-    <section class="intro">
+    <section class="page-heading">
       <div>
-        <p class="eyebrow">DATABASE DASHBOARD</p>
-        <h2>Мои продукты</h2>
-        <p class="muted">Товары из твоей базы данных Supabase.</p>
+        <p class="eyebrow">DATABASE OVERVIEW</p>
+        <h1>Мои товары</h1>
+        <p class="subtitle">
+          Товары, загруженные непосредственно из таблицы Supabase.
+        </p>
       </div>
-      <button id="refreshAllBtn" type="button">↻ Обновить всё</button>
+
+      <button id="refresh-button" class="refresh-button" type="button">
+        ↻ Обновить
+      </button>
     </section>
 
     <section class="stats">
       <article class="stat-card">
-        <span>Всего товаров</span>
-        <strong id="productsCount">—</strong>
+        <p>Всего товаров</p>
+        <strong id="products-count">—</strong>
       </article>
+
       <article class="stat-card">
-        <span>Общая стоимость</span>
-        <strong id="totalValue">—</strong>
+        <p>Столбцов в таблице</p>
+        <strong id="columns-count">—</strong>
       </article>
     </section>
 
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h3>Список продуктов</h3>
-          <p class="muted">Данные из таблицы public.products</p>
-        </div>
-        <button id="refreshProductsBtn" type="button">
-          ↻ Обновить товары
-        </button>
-      </div>
-
-      <div id="productsMessage" class="message">
-        Загружаем продукты...
-      </div>
-
-      <div class="table-scroll">
-        <table id="productsTable" hidden>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Название</th>
-              <th>Цена</th>
-              <th>Количество</th>
-              <th>Сумма</th>
-            </tr>
-          </thead>
-          <tbody id="productsBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="panel structure-panel">
-      <div class="panel-heading">
-        <div>
-          <h3>Структура таблицы</h3>
-          <p class="muted">Колонки и типы данных products</p>
+          <h2>Каталог товаров</h2>
+          <p>Таблица: <code>public.products</code></p>
         </div>
         <span class="schema-label">schema: public</span>
       </div>
 
-      <div id="structureMessage" class="message">
-        Загружаем структуру...
+      <div id="status" class="status" role="status" aria-live="polite">
+        Подключение к базе данных...
       </div>
 
-      <div id="structureTables" class="tables"></div>
+      <div id="products-list" class="table-container">
+        <!-- Здесь script.js отобразит товары -->
+      </div>
     </section>
 
     <footer>
-      Supabase Explorer · Просмотр данных и структуры
+      Supabase Explorer · Данные загружаются из твоей базы
     </footer>
   </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js"></script>
 </body>
 </html>
