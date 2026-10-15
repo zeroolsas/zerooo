@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase — структура базы данных</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">S</div>
+    <div>
+      <h1>Supabase Explorer</h1>
+      <p>Структура базы данных</p>
+    </div>
+    <span class="status" id="status">Подключение...</span>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">DATABASE OVERVIEW</p>
+        <h2>Таблицы и столбцы</h2>
+        <p class="muted">
+          Просмотр структуры таблиц схемы public.
+        </p>
+      </div>
+      <button id="refreshBtn" type="button">
+        ↻ Обновить
+      </button>
+    </section>
+
+    <section class="stats">
+      <article class="stat-card">
+        <span>Таблиц</span>
+        <strong id="tableCount">—</strong>
+      </article>
+      <article class="stat-card">
+        <span>Столбцов</span>
+        <strong id="columnCount">—</strong>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h3>Структура базы данных</h3>
+        <span id="schemaLabel">schema: public</span>
+      </div>
+
+      <div id="message" class="message">
+        Загрузка структуры базы данных...
+      </div>
+
+      <div id="tables" class="tables"></div>
+    </section>
+
+    <footer>
+      Supabase Explorer · Только просмотр структуры
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
