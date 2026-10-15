@@ -4,59 +4,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Supabase — структура базы данных</title>
+  <meta name="theme-color" content="#0b1120">
+  <title>Supabase Products Explorer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="logo">S</div>
-    <div>
+    <div class="brand">
       <h1>Supabase Explorer</h1>
-      <p>Структура базы данных</p>
+      <p>Управление продуктами</p>
     </div>
-    <span class="status" id="status">Подключение...</span>
+    <span id="status" class="status">Подключение...</span>
   </header>
 
   <main class="container">
     <section class="intro">
       <div>
-        <p class="eyebrow">DATABASE OVERVIEW</p>
-        <h2>Таблицы и столбцы</h2>
-        <p class="muted">
-          Просмотр структуры таблиц схемы public.
-        </p>
+        <p class="eyebrow">DATABASE DASHBOARD</p>
+        <h2>Мои продукты</h2>
+        <p class="muted">Товары из твоей базы данных Supabase.</p>
       </div>
-      <button id="refreshBtn" type="button">
-        ↻ Обновить
-      </button>
+      <button id="refreshAllBtn" type="button">↻ Обновить всё</button>
     </section>
 
     <section class="stats">
       <article class="stat-card">
-        <span>Таблиц</span>
-        <strong id="tableCount">—</strong>
+        <span>Всего товаров</span>
+        <strong id="productsCount">—</strong>
       </article>
       <article class="stat-card">
-        <span>Столбцов</span>
-        <strong id="columnCount">—</strong>
+        <span>Общая стоимость</span>
+        <strong id="totalValue">—</strong>
       </article>
     </section>
 
     <section class="panel">
       <div class="panel-heading">
-        <h3>Структура базы данных</h3>
-        <span id="schemaLabel">schema: public</span>
+        <div>
+          <h3>Список продуктов</h3>
+          <p class="muted">Данные из таблицы public.products</p>
+        </div>
+        <button id="refreshProductsBtn" type="button">
+          ↻ Обновить товары
+        </button>
       </div>
 
-      <div id="message" class="message">
-        Загрузка структуры базы данных...
+      <div id="productsMessage" class="message">
+        Загружаем продукты...
       </div>
 
-      <div id="tables" class="tables"></div>
+      <div class="table-scroll">
+        <table id="productsTable" hidden>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Цена</th>
+              <th>Количество</th>
+              <th>Сумма</th>
+            </tr>
+          </thead>
+          <tbody id="productsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel structure-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>Структура таблицы</h3>
+          <p class="muted">Колонки и типы данных products</p>
+        </div>
+        <span class="schema-label">schema: public</span>
+      </div>
+
+      <div id="structureMessage" class="message">
+        Загружаем структуру...
+      </div>
+
+      <div id="structureTables" class="tables"></div>
     </section>
 
     <footer>
-      Supabase Explorer · Только просмотр структуры
+      Supabase Explorer · Просмотр данных и структуры
     </footer>
   </main>
 
